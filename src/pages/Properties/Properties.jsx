@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { properties } from '../../data/mockData';
-import { FaMapMarkerAlt, FaBed, FaVectorSquare, FaTag } from 'react-icons/fa';
+import { properties as initialProperties } from '../../data/mockData';
+import { FaMapMarkerAlt, FaBed, FaVectorSquare, FaTag, FaTimes } from 'react-icons/fa';
 import { MdOutlineRealEstateAgent } from 'react-icons/md';
 
 const Properties = () => {
@@ -9,8 +9,36 @@ const Properties = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('All');
 
+  // Basic Beginner Level State for managing the properties list and the form
+  const [propertyList, setPropertyList] = useState(initialProperties);
+  const [showAddForm, setShowAddForm] = useState(false);
+  const [newProperty, setNewProperty] = useState({
+    name: '', type: 'HOUSE', address: '', bhk: '', sqft: '', price: '', status: 'READY TO MOVE'
+  });
 
-  const filteredProperties = properties.filter((property) => {
+  // Handle typing in the inputs
+  const handleInputChange = (e) => {
+    setNewProperty({ ...newProperty, [e.target.name]: e.target.value });
+  };
+
+  // Handle submitting the form
+  const handleAddProperty = (e) => {
+    e.preventDefault();
+    const propertyToAdd = {
+      ...newProperty,
+      id: Date.now(), // Create a unique ID for the new property
+      images: ['https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=500&q=60'] // Placeholder image
+    };
+    
+    // Add the new property to the top of the list
+    setPropertyList([propertyToAdd, ...propertyList]);
+    
+    // Close the modal and reset the form
+    setShowAddForm(false);
+    setNewProperty({ name: '', type: 'HOUSE', address: '', bhk: '', sqft: '', price: '', status: 'READY TO MOVE' });
+  };
+
+  const filteredProperties = propertyList.filter((property) => {
     const matchesSearch = property.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       property.address.toLowerCase().includes(searchTerm.toLowerCase());
     const matchesType = filterType === 'All' || property.type === filterType;
@@ -53,15 +81,68 @@ const Properties = () => {
             <option value="VILLA">Exclusive Villas</option>
             <option value="HOUSE">Premium Houses</option>
           </select>
-          {/* BEGINNER LESSON: Using onClick to show an alert popup */}
+          {/* Button to show the Add Property Modal */}
           <button
-            onClick={() => alert("Hello! Add Property feature is coming soon!")}
+            onClick={() => setShowAddForm(true)}
             className="bg-gradient-to-r from-emerald-400 to-teal-500 hover:from-emerald-500 hover:to-teal-600 text-white px-8 py-4 rounded-2xl font-bold transition-all shadow-lg shadow-emerald-500/30 hover:shadow-emerald-500/50 hover:-translate-y-1"
           >
             Add Listing
           </button>
         </div>
       </div>
+
+      {/* Beginner Level Modal for Adding Property */}
+      {showAddForm && (
+        <div className="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-[2rem] p-8 w-full max-w-2xl shadow-2xl relative max-h-[90vh] overflow-y-auto">
+            <button 
+              onClick={() => setShowAddForm(false)}
+              className="absolute top-6 right-6 text-slate-400 hover:text-slate-700 transition-colors"
+            >
+              <FaTimes className="text-2xl" />
+            </button>
+            
+            <h2 className="text-3xl font-black text-slate-800 mb-6">Add New Property</h2>
+            
+            <form onSubmit={handleAddProperty} className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-2">Property Name</label>
+                  <input type="text" name="name" value={newProperty.name} onChange={handleInputChange} required className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500" placeholder="e.g. Luxury Villa" />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-2">Address</label>
+                  <input type="text" name="address" value={newProperty.address} onChange={handleInputChange} required className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500" placeholder="e.g. 123 Main St" />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-2">Type</label>
+                  <select name="type" value={newProperty.type} onChange={handleInputChange} className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500">
+                    <option value="HOUSE">House</option>
+                    <option value="APARTMENT">Apartment</option>
+                    <option value="VILLA">Villa</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-2">BHK</label>
+                  <input type="text" name="bhk" value={newProperty.bhk} onChange={handleInputChange} required className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500" placeholder="e.g. 3 BHK" />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-2">Square Feet</label>
+                  <input type="text" name="sqft" value={newProperty.sqft} onChange={handleInputChange} required className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500" placeholder="e.g. 1500 Sq.ft." />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-2">Price</label>
+                  <input type="text" name="price" value={newProperty.price} onChange={handleInputChange} required className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-blue-500" placeholder="e.g. ₹ 85 Lakhs" />
+                </div>
+              </div>
+              
+              <button type="submit" className="w-full bg-blue-600 hover:bg-blue-700 text-white font-bold py-4 rounded-xl transition-colors text-lg shadow-lg shadow-blue-600/30">
+                Submit Property
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
 
       {/* Property Grid */}
       {filteredProperties.length > 0 ? (

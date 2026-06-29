@@ -1,18 +1,79 @@
 import React, { useState } from 'react';
-import { tenants } from '../../data/mockData';
-import { MdOutlineEmail, MdOutlinePhone, MdOutlineChatBubbleOutline, MdOutlineInsertDriveFile, MdFilterList, MdAdd, MdSearch, MdMoreVert } from 'react-icons/md';
+import { tenants as initialTenants } from '../../data/mockData';
+import { MdOutlineEmail, MdOutlinePhone, MdOutlineChatBubbleOutline, MdOutlineInsertDriveFile, MdFilterList, MdAdd, MdSearch, MdMoreVert, MdClose } from 'react-icons/md';
 
 const Tenants = () => {
   const [searchTerm, setSearchTerm] = useState('');
+  
+  // 1. Beginner logic: Manage the list of tenants with useState
+  const [tenantList, setTenantList] = useState(initialTenants);
+  
+  // 2. Beginner logic: State for showing/hiding the Add Tenant form
+  const [showAddForm, setShowAddForm] = useState(false);
+  
+  // 3. Beginner logic: State for the new tenant input fields
+  const [newTenant, setNewTenant] = useState({
+    name: '',
+    email: '',
+    phone: '',
+    property: 'Luxury Villa',
+    rentAmount: '$2,000'
+  });
 
-  const filteredTenants = tenants.filter(tenant => 
+  // Handle typing in the input fields
+  const handleInputChange = (e) => {
+    setNewTenant({ ...newTenant, [e.target.name]: e.target.value });
+  };
+
+  // Handle adding a new tenant
+  const handleAddTenant = (e) => {
+    e.preventDefault();
+    
+    // Create a new tenant object (assigning some mock default values for simplicity)
+    const tenantToAdd = {
+      id: Date.now(),
+      name: newTenant.name,
+      email: newTenant.email,
+      phone: newTenant.phone,
+      property: newTenant.property,
+      rentAmount: newTenant.rentAmount,
+      status: 'Active', // Default status
+      since: new Date().getFullYear().toString(),
+      avatar: 'https://i.pravatar.cc/150?u=' + Date.now(), // Generate random avatar
+      unit: 'Unit ' + Math.floor(Math.random() * 900 + 100),
+      lastPaymentStatus: 'Paid',
+      lastPaymentDate: 'Just Now'
+    };
+    
+    // Add to the top of our state list
+    setTenantList([tenantToAdd, ...tenantList]);
+    
+    // Trigger notification interaction
+    alert(`Success! ${newTenant.name} has been added as a new tenant to ${newTenant.property}. An onboarding email has been sent!`);
+    
+    // Reset form and close modal
+    setShowAddForm(false);
+    setNewTenant({ name: '', email: '', phone: '', property: 'Luxury Villa', rentAmount: '$2,000' });
+  };
+
+  const handleActionClick = (action, name) => {
+    // Beginner level interaction mapping based on action
+    if (action === 'Contact') {
+      alert(`Opening chat window for ${name}... (Interaction Triggered!)`);
+    } else if (action === 'View Documents') {
+      alert(`Fetching lease agreement and documents for ${name}...`);
+    } else if (action === 'Filter options') {
+      alert(`Opening advanced filter panel (Feature coming soon!)`);
+    } else {
+      alert(`${action} triggered for ${name}`);
+    }
+  };
+
+  // Filter based on search term
+  const filteredTenants = tenantList.filter(tenant => 
     tenant.name.toLowerCase().includes(searchTerm.toLowerCase()) || 
     tenant.property.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
-  const handleActionClick = (action, name) => {
-    alert(`${action} triggered for ${name}`);
-  };
 
   return (
     <div className="space-y-8 animate-fade-in relative z-10 w-full">
@@ -33,18 +94,111 @@ const Tenants = () => {
             <MdFilterList className="text-xl" />
             Filter
           </button>
-          <button className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-slate-900 font-bold transition-all shadow-lg hover:shadow-cyan-500/30 transform hover:-translate-y-0.5" onClick={() => handleActionClick('Add New Tenant', '')}>
+          <button 
+            className="flex-1 md:flex-none flex items-center justify-center gap-2 px-5 py-3 rounded-xl bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 text-slate-900 font-bold transition-all shadow-lg hover:shadow-cyan-500/30 transform hover:-translate-y-0.5" 
+            onClick={() => setShowAddForm(true)}
+          >
             <MdAdd className="text-xl" />
             New Tenant
           </button>
         </div>
       </div>
 
+      {/* Beginner Level Modal for Adding Tenant */}
+      {showAddForm && (
+        <div className="fixed inset-0 bg-slate-900/60 backdrop-blur-md z-50 flex items-center justify-center p-4">
+          <div className="bg-white rounded-[2rem] p-8 w-full max-w-xl shadow-2xl relative">
+            <button 
+              onClick={() => setShowAddForm(false)}
+              className="absolute top-6 right-6 text-slate-400 hover:text-slate-700 transition-colors"
+            >
+              <MdClose className="text-3xl" />
+            </button>
+            
+            <h2 className="text-3xl font-black text-slate-800 mb-6">Add New Tenant</h2>
+            
+            <form onSubmit={handleAddTenant} className="space-y-5">
+              <div>
+                <label className="block text-sm font-bold text-slate-700 mb-2">Tenant Name</label>
+                <input 
+                  type="text" 
+                  name="name" 
+                  value={newTenant.name} 
+                  onChange={handleInputChange} 
+                  required 
+                  className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 bg-slate-50" 
+                  placeholder="e.g. John Doe" 
+                />
+              </div>
+              
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-2">Email</label>
+                  <input 
+                    type="email" 
+                    name="email" 
+                    value={newTenant.email} 
+                    onChange={handleInputChange} 
+                    required 
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 bg-slate-50" 
+                    placeholder="john@example.com"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-2">Phone</label>
+                  <input 
+                    type="text" 
+                    name="phone" 
+                    value={newTenant.phone} 
+                    onChange={handleInputChange} 
+                    required 
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 bg-slate-50" 
+                    placeholder="(555) 123-4567"
+                  />
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-2">Property</label>
+                  <input 
+                    type="text" 
+                    name="property" 
+                    value={newTenant.property} 
+                    onChange={handleInputChange} 
+                    required 
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 bg-slate-50" 
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-bold text-slate-700 mb-2">Rent Amount</label>
+                  <input 
+                    type="text" 
+                    name="rentAmount" 
+                    value={newTenant.rentAmount} 
+                    onChange={handleInputChange} 
+                    required 
+                    className="w-full px-4 py-3 rounded-xl border border-slate-200 focus:ring-2 focus:ring-indigo-500 bg-slate-50" 
+                  />
+                </div>
+              </div>
+              
+              <button 
+                type="submit" 
+                className="w-full bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-bold py-4 rounded-xl shadow-lg transition-transform hover:-translate-y-1 mt-4"
+              >
+                Save & Onboard Tenant
+              </button>
+            </form>
+          </div>
+        </div>
+      )}
+
       {/* KPI Stats */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
         {[
-          { title: 'Total Tenants', value: tenants.length, sub: 'Across all properties', icon: '👥', color: 'from-blue-500 to-indigo-600' },
-          { title: 'Expiring Soon', value: tenants.filter(t => t.status === 'Expiring Soon').length, sub: 'Needs attention', icon: '⏳', color: 'from-amber-400 to-orange-500' },
+          { title: 'Total Tenants', value: tenantList.length, sub: 'Across all properties', icon: '👥', color: 'from-blue-500 to-indigo-600' },
+          { title: 'Expiring Soon', value: tenantList.filter(t => t.status === 'Expiring Soon').length, sub: 'Needs attention', icon: '⏳', color: 'from-amber-400 to-orange-500' },
           { title: 'Avg. Occupancy', value: '96.4%', sub: 'Premium Portfolios', icon: '🏢', color: 'from-emerald-400 to-teal-500' }
         ].map((kpi, index) => (
           <div key={index} className="group relative p-6 rounded-3xl bg-white border border-slate-100 shadow-xl shadow-slate-200/50 hover:shadow-2xl hover:shadow-indigo-100 transition-all duration-300 transform hover:-translate-y-1">
@@ -181,7 +335,7 @@ const Tenants = () => {
           </table>
           
           <div className="p-5 border-t border-slate-100 bg-slate-50/50 flex justify-between items-center text-sm font-bold text-slate-500">
-            <span>Showing <span className="text-slate-800">{filteredTenants.length}</span> of <span className="text-slate-800">{tenants.length}</span> matching tenants</span>
+            <span>Showing <span className="text-slate-800">{filteredTenants.length}</span> of <span className="text-slate-800">{tenantList.length}</span> matching tenants</span>
           </div>
         </div>
       </div>

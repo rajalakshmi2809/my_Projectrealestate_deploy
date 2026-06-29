@@ -24,13 +24,6 @@ const revenueData = [
 const Dashboard = () => {
   const navigate = useNavigate();
 
-  useEffect(() => {
-    const isLoggedIn = localStorage.getItem("isLoggedIn");
-    if (!isLoggedIn) {
-      alert("Please login first");
-      navigate("/");
-    }
-  }, [navigate]);
 
   const activeTenantsCount = tenants.filter(t => t.status === 'Active').length;
   const highPriorityTickets = maintenanceTickets.filter(t => t.priority.includes('HIGH')).length;
